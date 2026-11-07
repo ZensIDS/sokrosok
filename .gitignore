@@ -1,0 +1,47 @@
+# Rahasia & konfigurasi lokal
+.env
+.env.*
+!.env.example
+/auth.json
+
+# Dependensi & hasil build
+/vendor
+/node_modules
+# /public/build sengaja TIDAK diabaikan: hasil build di-commit, hosting tidak menjalankan npm
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+
+# Database lokal (SQLite dev)
+*.sqlite
+*.sqlite-journal
+
+# Log & cache
+*.log
+.phpunit.result.cache
+/.phpunit.cache
+
+# Docker / Sail (override lokal)
+docker-compose.override.yml
+
+# Editor / IDE
+/.idea
+/.vscode
+/.fleet
+/.nova
+/.zed
+.phpactor.json
+
+# OS
+.DS_Store
+**/.DS_Store
+__MACOSX/
+Thumbs.db
+
+# Arsip & backup
+*.zip
+*.tar.gz
+*.sql
+Homestead.json
+Homestead.yaml
