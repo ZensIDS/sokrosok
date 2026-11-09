@@ -19,6 +19,8 @@ class Bin extends Model
             'is_active' => 'boolean',
             'sensor_error' => 'boolean',
             'last_reported_at' => 'datetime',
+            'wifi_reset_requested_at' => 'datetime',
+            'wifi_reset_delivered_at' => 'datetime',
             'latitude' => 'float',
             'longitude' => 'float',
         ];
@@ -71,6 +73,26 @@ class Bin extends Model
         }
 
         return $this->last_reported_at->lt(now()->subSeconds(max((int) $this->sleep_interval_sec, 60) * 2 + 120));
+    }
+
+    /**
+     * Status perintah reset WiFi:
+     *  null      = tidak ada perintah aktif
+     *  'pending' = menunggu perangkat bangun dan mengambil perintah
+     *  'portal'  = perangkat sudah menerima perintah, portal WiFi (SSID = kode tong) sedang/baru dibuka
+     */
+    public function wifiResetState(): ?string
+    {
+        if (! $this->wifi_reset_requested_at) {
+            return null;
+        }
+
+        if (! $this->wifi_reset_delivered_at) {
+            return 'pending';
+        }
+
+        // Portal di firmware terbuka 5 menit; tampilkan petunjuk selama 10 menit.
+        return $this->wifi_reset_delivered_at->gt(now()->subMinutes(10)) ? 'portal' : null;
     }
 
     public function logs(): HasMany

@@ -1,7 +1,7 @@
 /*
   SOKROSOK firmware v2 (ESP32 + HC-SR04)
   Kontrak API sama dengan firmware lama:
-    GET  /api/bins/config?bin_code=...      (header x-api-key)
+    GET  /api/bins/config?bin_code=...      (header x-api-key; balasan memuat wifi_reset)
     POST /api/bins/status-update            (header x-api-key)
   Library: WiFiManager (tzapu). Lainnya bawaan board ESP32.
 */
@@ -28,10 +28,17 @@ const char* API_BASE_URL = "https://sokrosok.decaasoftwares.com";
 #define DEFAULT_HEIGHT_CM 150
 #define DEFAULT_SLEEP_SEC 300
 
+// Portal WiFiManager: SSID = BIN_CODE. Dibuka otomatis bila WiFi gagal,
+// atau atas perintah tombol "Reset WiFi" di aplikasi (terbuka lebih lama).
+const char* PORTAL_PASS = "1sampai8";
+#define PORTAL_AUTO_TIMEOUT_SEC  60
+#define PORTAL_RESET_TIMEOUT_SEC 300
+
 SET_LOOP_TASK_STACK_SIZE(16 * 1024);
 
 int  binHeightCm = DEFAULT_HEIGHT_CM;
 long sleepSec    = DEFAULT_SLEEP_SEC;
+bool wifiResetRequested = false;  // diisi dari balasan /api/bins/config
 
 void goSleep() {
   long s = SLEEP_OVERRIDE_SEC > 0 ? SLEEP_OVERRIDE_SEC : sleepSec;
@@ -109,6 +116,17 @@ long jsonNumber(const String& json, const char* key, long fallback) {
   return v > 0 ? v : fallback;
 }
 
+// Baca nilai boolean setelah "key": pada JSON sederhana.
+bool jsonBool(const String& json, const char* key, bool fallback) {
+  int k = json.indexOf(String("\"") + key + "\"");
+  if (k < 0) return fallback;
+  int c = json.indexOf(':', k);
+  if (c < 0) return fallback;
+  String v = json.substring(c + 1);
+  v.trim();
+  return v.startsWith("true");
+}
+
 void fetchConfig() {
   String res;
   int code = sendRequest(String(API_BASE_URL) + "/api/bins/config?bin_code=" + BIN_CODE, "GET", "", res);
@@ -116,6 +134,7 @@ void fetchConfig() {
   if (code == 200) {
     binHeightCm = jsonNumber(res, "capacity_liters", DEFAULT_HEIGHT_CM);
     sleepSec    = jsonNumber(res, "sleep_interval_sec", DEFAULT_SLEEP_SEC);
+    wifiResetRequested = jsonBool(res, "wifi_reset", false);
   }
 }
 
@@ -141,8 +160,8 @@ void setup() {
   pinMode(ECHO_PIN, INPUT);
 
   WiFiManager wm;
-  wm.setConfigPortalTimeout(60);
-  if (!wm.autoConnect(BIN_CODE, "1sampai8")) {
+  wm.setConfigPortalTimeout(PORTAL_AUTO_TIMEOUT_SEC);
+  if (!wm.autoConnect(BIN_CODE, PORTAL_PASS)) {
     Serial.println("WiFi gagal, tidur lalu coba lagi");
     goSleep();
   }
@@ -150,6 +169,19 @@ void setup() {
 
   Serial.println("Ambil config...");
   fetchConfig();
+
+  // Perintah "Reset WiFi" dari aplikasi: buka portal agar WiFi bisa diganti lewat HP.
+  if (wifiResetRequested) {
+    Serial.printf("Perintah reset WiFi diterima. Portal '%s' dibuka %d detik...\n", BIN_CODE, PORTAL_RESET_TIMEOUT_SEC);
+    wm.setConfigPortalTimeout(PORTAL_RESET_TIMEOUT_SEC);
+    wm.startConfigPortal(BIN_CODE, PORTAL_PASS);
+    if (WiFi.status() != WL_CONNECTED) {
+      Serial.println("Tidak tersambung setelah portal, tidur lalu coba lagi");
+      goSleep();
+    }
+    Serial.print("IP: "); Serial.println(WiFi.localIP());
+  }
+
   Serial.println("Baca sensor...");
   float d = readDistanceCm();
   Serial.printf("Jarak: %.1f cm (tinggi %d cm)\n", d, binHeightCm);

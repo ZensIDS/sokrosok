@@ -16,11 +16,19 @@ class BinDeviceController extends Controller
         /** @var Bin $bin */
         $bin = $request->attributes->get('bin');
 
+        // Perintah reset WiFi dikirim sekali saja: setelah diambil perangkat, ditandai delivered.
+        $wifiReset = $bin->wifi_reset_requested_at && ! $bin->wifi_reset_delivered_at;
+
+        if ($wifiReset) {
+            $bin->forceFill(['wifi_reset_delivered_at' => now()])->save();
+        }
+
         return response()->json([
             'config' => [
                 // Firmware memakai capacity_liters sebagai tinggi tong (cm).
                 'capacity_liters' => $bin->height_cm,
                 'sleep_interval_sec' => $bin->sleep_interval_sec,
+                'wifi_reset' => (bool) $wifiReset,
             ],
         ]);
     }

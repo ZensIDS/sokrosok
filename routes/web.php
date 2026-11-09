@@ -31,6 +31,8 @@ Route::middleware(['auth', EnsureRole::class . ':admin'])
         Route::get('bins/{bin}/data', BinLiveController::class)->name('bins.data');
         Route::resource('bins', BinController::class);
         Route::post('bins/{bin}/regenerate-key', [BinController::class, 'regenerateKey'])->name('bins.regenerate-key');
+        Route::post('bins/{bin}/wifi-reset', [BinController::class, 'requestWifiReset'])->name('bins.wifi-reset');
+        Route::delete('bins/{bin}/wifi-reset', [BinController::class, 'cancelWifiReset'])->name('bins.wifi-reset.cancel');
 
         Route::resource('petugas', UserController::class)->parameters(['petugas' => 'user'])->except(['show']);
         Route::resource('nasabah', UserController::class)->parameters(['nasabah' => 'user'])->except(['show']);

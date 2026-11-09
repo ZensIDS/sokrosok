@@ -72,6 +72,27 @@ class BinController extends Controller
         return redirect()->route('admin.bins.show', $bin)->with('status', 'API key baru dibuat. Perangkat harus di-flash ulang dengan key ini.');
     }
 
+    /** Tombol "Reset WiFi" di index: perangkat akan membuka portal WiFiManager saat bangun berikutnya. */
+    public function requestWifiReset(Bin $bin): RedirectResponse
+    {
+        $bin->forceFill([
+            'wifi_reset_requested_at' => now(),
+            'wifi_reset_delivered_at' => null,
+        ])->save();
+
+        return back()->with('status', "Perintah reset WiFi {$bin->code} dikirim. Perangkat akan membuka portal WiFi saat bangun berikutnya (atau tekan tombol EN di ESP32 agar langsung).");
+    }
+
+    public function cancelWifiReset(Bin $bin): RedirectResponse
+    {
+        $bin->forceFill([
+            'wifi_reset_requested_at' => null,
+            'wifi_reset_delivered_at' => null,
+        ])->save();
+
+        return back()->with('status', "Perintah reset WiFi {$bin->code} dibatalkan.");
+    }
+
     private function validated(Request $request, ?Bin $bin = null): array
     {
         $request->merge(['code' => strtoupper(trim((string) $request->input('code')))]);

@@ -20,6 +20,7 @@
                 <th class="px-5 py-3">Nama / Lokasi</th>
                 <th class="px-5 py-3">Volume</th>
                 <th class="px-5 py-3">Laporan Terakhir</th>
+                <th class="px-5 py-3">WiFi</th>
                 <th class="px-5 py-3 text-right">Aksi</th>
             </tr>
         </thead>
