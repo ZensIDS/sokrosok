@@ -15,7 +15,8 @@ const char* BIN_CODE     = "BIN-001";
 const char* API_KEY      = "sk_43gbw3Vnyvcbewi2Zbn6QXYAy3N5ijivOJV1S8W4";
 // Lokal : "http://192.168.x.x"  (IP Mac, tanpa slash di akhir; tambah :port bila bukan 80)
 // Produksi: "https://sokrosok.decaasoftwares.com"
-const char* API_BASE_URL = "http://192.168.18.92";
+// const char* API_BASE_URL = "http://192.168.18.92";
+const char* API_BASE_URL = "https://sokrosok.decaasoftwares.com";
 // =====================================================
 
 // Uji coba: isi >0 untuk memaksa tidur singkat (detik). Produksi: 0 = ikut server.
