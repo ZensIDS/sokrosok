@@ -137,6 +137,25 @@ class ReadApiTest extends TestCase
         $this->assertCount(10, $this->auth()->getJson($url . '?limit=10')->json('logs'));
     }
 
+    public function test_waktu_riwayat_dikonversi_dari_zona_waktu_database(): void
+    {
+        config(['services.sokrosok.log_db_timezone' => 'Asia/Jakarta']);
+        $bin = $this->bin();
+
+        // created_at diisi MySQL dengan jam lokal server (WIB): 16:26 WIB = 09:26 UTC.
+        DB::table('bin_logs')->insert([
+            'bin_id' => $bin->id,
+            'fill_level_percent' => 0,
+            'distance_cm' => 46.0,
+            'status' => 'empty',
+            'sensor_error' => false,
+            'created_at' => '2026-11-10 16:26:00',
+        ]);
+
+        $this->auth()->getJson('/api/v1/bins/' . $bin->code)->assertOk()
+            ->assertJsonPath('logs.0.reported_at', '2026-11-10T09:26:00+00:00');
+    }
+
     public function test_map_struktur_dan_warna(): void
     {
         $this->bin([], ['fill_level_percent' => 95]);

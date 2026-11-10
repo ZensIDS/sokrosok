@@ -41,6 +41,8 @@ return [
             'trim',
             explode(',', (string) env('SOKROSOK_READ_TOKENS', ''))
         ))),
+        // Zona waktu MySQL tempat bin_logs.created_at (CURRENT_TIMESTAMP) disimpan. Ubah ke UTC bila jam server DB sudah UTC.
+        'log_db_timezone' => env('SOKROSOK_LOG_DB_TIMEZONE', 'Asia/Jakarta'),
     ],
 
 ];

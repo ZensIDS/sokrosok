@@ -47,32 +47,37 @@ Tujuan: app Laravel lain (Laravel 8/9) bisa menampilkan **peta**, **daftar tempa
 - [x] Respons tidak membocorkan kredensial perangkat
 
 ### Tahap 5 — Deploy Sokrosok
-- [ ] Upload file baru ke server, isi token di `.env` server
-- [ ] `php artisan config:clear` lalu `config:cache` / `route:cache` bila dipakai
-- [ ] Tes dengan `curl` dari server (domain `sokrosok.decaasoftwares.com`)
+- [x] Upload file baru ke server, isi token di `.env` server
+- [x] `php artisan config:clear` lalu `config:cache` / `route:cache` bila dipakai
+- [x] Tes dengan `curl` dari server (domain `sokrosok.decaasoftwares.com`)
 
 ---
 
 ## B. Sisi App Laravel lain (penerima data)
 
 ### Tahap 6 — Kenali app lain
-- [ ] Kirim zip app (tanpa `.env`, `vendor/`, `node_modules/`)
-- [ ] Cek versi Laravel & PHP di `composer.json`
-- [ ] Pelajari struktur: routes, layout, sistem login & role, framework CSS/JS yang dipakai
-- [ ] Tentukan letak menu baru dan siapa yang boleh mengaksesnya
+- [x] Kirim zip app (tanpa `.env`, `vendor/`, `node_modules/`)
+- [x] Cek versi Laravel & PHP di `composer.json`
+- [x] Pelajari struktur: routes, layout, sistem login & role, framework CSS/JS yang dipakai
+- [x] Tentukan letak menu baru dan siapa yang boleh mengaksesnya
+- **Hasil:** Laravel 9.19+ (`^9.19`), PHP `^8.0.2`, Guzzle 7 (jadi `Http` facade siap pakai), Sanctum 3. Login session lewat `AuthController` (`/user-login`); role di `users.role` (`admin`, `pengepul`, `masyarakat`), dijaga middleware `verified.role:...`.
+- **Layout admin:** `layouts/master.blade.php` + `layouts/sidebar.blade.php` (AdminLTE 2, Bootstrap 3, jQuery 2.1.4, Font Awesome 4.4). Leaflet 1.9.1 + OSM sudah dipakai di `dashboard/index.blade.php`.
+- **Keputusan:** hanya role `admin` yang boleh mengakses. Menu "Smart Bin" di `layouts/sidebar.blade.php`, tepat setelah "Pengambilan". Layout pengepul/masyarakat tidak diubah.
 
 ### Tahap 7 — Klien API di app lain
-- [ ] Tambah `SOKROSOK_URL` dan `SOKROSOK_TOKEN` di `.env`, daftarkan di `config/services.php`
-- [ ] Buat service `SokrosokClient` (HTTP client, timeout ±5 detik)
-- [ ] Cache hasil 30–60 detik; bila Sokrosok gagal, tampilkan data cache terakhir dengan penanda "data terakhir"
+- [x] Tambah `SOKROSOK_URL` dan `SOKROSOK_TOKEN` di `.env`, daftarkan di `config/services.php`
+- [x] Buat service `SokrosokClient` (HTTP client, timeout ±5 detik)
+- [x] Cache hasil 30–60 detik; bila Sokrosok gagal, tampilkan data cache terakhir dengan penanda "data terakhir"
+- Catatan: pakai `Illuminate\Support\Facades\Http` (Laravel 9); blok `sokrosok` ditambahkan ke `config/services.php` app lain
 
 ### Tahap 8 — Endpoint internal untuk browser
-- [ ] Rute JSON di app lain (dilindungi login app itu) yang meneruskan data dari `SokrosokClient`
-- [ ] Browser hanya memanggil rute ini, tidak pernah memanggil Sokrosok langsung
+- [x] Rute JSON di app lain (dilindungi login app itu) yang meneruskan data dari `SokrosokClient`
+- [x] Browser hanya memanggil rute ini, tidak pernah memanggil Sokrosok langsung
 
 ### Tahap 9 — Halaman daftar & detail tong
 - [ ] Daftar tong (persen isi, status, laporan terakhir) dengan polling 30–60 detik
 - [ ] Halaman detail satu tong: info + grafik riwayat
+- Catatan: halaman `/smart-bin` (daftar) dan `/smart-bin/tong/{code}` (detail), view di `resources/views/smartbin/`; grafik pakai Highcharts 10.3.3 (sama seperti dashboard); polling 30 detik, berhenti saat tab tersembunyi
 
 ### Tahap 10 — Halaman peta
 - [ ] Peta Leaflet + OpenStreetMap, penanda berwarna sesuai status
@@ -80,8 +85,8 @@ Tujuan: app Laravel lain (Laravel 8/9) bisa menampilkan **peta**, **daftar tempa
 - [ ] Penanda ikut diperbarui lewat polling
 
 ### Tahap 11 — Menu & hak akses
-- [ ] Tambah menu di app lain
-- [ ] Batasi akses sesuai role yang dipilih di tahap 6
+- [ ] Tambah menu "Smart Bin" di `layouts/sidebar.blade.php` (setelah "Pengambilan"), ikon `fa fa-trash-o` atau sejenis, state `active` mengikuti rute
+- [ ] Rute daftar, detail, peta, dan endpoint JSON internal diletakkan di grup `['auth', 'verified.role:admin']` di `routes/web.php` (hanya admin)
 
 ---
 
@@ -97,3 +102,4 @@ Tujuan: app Laravel lain (Laravel 8/9) bisa menampilkan **peta**, **daftar tempa
 - [ ] Rencana rotasi token (tambah token baru → ganti di app lain → hapus token lama)
 - [ ] Pastikan `.env` kedua app tidak masuk repositori
 - [ ] Catat alur dan lokasi token di dokumentasi singkat
+- [ ] (Saran, di app lain) Hapus atau batasi ke admin rute `/optimize`, `/preview-order-email`, `/preview-verification-email` di `routes/web.php` karena saat ini bisa dibuka tanpa login

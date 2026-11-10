@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\V1;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\BinResource;
 use App\Models\Bin;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -62,7 +63,7 @@ class BinReadController extends Controller
                 'fill_percent' => $log->fill_level_percent,
                 'status' => $log->sensor_error ? 'error' : $log->status,
                 'sensor_error' => (bool) $log->sensor_error,
-                'reported_at' => $log->created_at?->toIso8601String(),
+                'reported_at' => $this->logTime($log),
             ])->values();
 
         return response()->json([
@@ -70,6 +71,27 @@ class BinReadController extends Controller
             'logs' => $logs,
             'updated_at' => now()->toIso8601String(),
         ]);
+    }
+
+    /**
+     * Waktu laporan dalam ISO 8601 (UTC).
+     *
+     * bin_logs.created_at diisi DEFAULT CURRENT_TIMESTAMP milik MySQL, yaitu jam lokal server database,
+     * sedangkan app Sokrosok berzona waktu UTC. Tanpa konversi, jam lokal (mis. 16:26 WIB) terbaca
+     * sebagai 16:26 UTC sehingga app lain menampilkan jam yang maju 7 jam.
+     * Zona waktu database diatur lewat SOKROSOK_LOG_DB_TIMEZONE (bawaan Asia/Jakarta).
+     */
+    private function logTime($log): ?string
+    {
+        $raw = $log->getRawOriginal('created_at');
+
+        if (! $raw) {
+            return null;
+        }
+
+        return Carbon::parse($raw, config('services.sokrosok.log_db_timezone', 'Asia/Jakarta'))
+            ->utc()
+            ->toIso8601String();
     }
 
     /** GET /api/v1/map : penanda siap pakai untuk Leaflet (hanya tong ber-koordinat). */
