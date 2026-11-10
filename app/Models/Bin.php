@@ -91,8 +91,9 @@ class Bin extends Model
             return 'pending';
         }
 
-        // Portal di firmware terbuka 5 menit; tampilkan petunjuk selama 10 menit.
-        return $this->wifi_reset_delivered_at->gt(now()->subMinutes(10)) ? 'portal' : null;
+        // Portal di firmware terbuka 5 menit; tampilkan petunjuk selama 6 menit saja
+        // supaya tidak menyesatkan setelah portal sudah tertutup.
+        return $this->wifi_reset_delivered_at->gt(now()->subMinutes(6)) ? 'portal' : null;
     }
 
     public function logs(): HasMany
