@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
@@ -94,6 +95,12 @@ class Bin extends Model
         // Portal di firmware terbuka 5 menit; tampilkan petunjuk selama 6 menit saja
         // supaya tidak menyesatkan setelah portal sudah tertutup.
         return $this->wifi_reset_delivered_at->gt(now()->subMinutes(6)) ? 'portal' : null;
+    }
+
+    /** Hanya tong aktif (dipakai API baca-saja). */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
     }
 
     public function logs(): HasMany

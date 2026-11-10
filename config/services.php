@@ -35,4 +35,12 @@ return [
         ],
     ],
 
+    'sokrosok' => [
+        // Token baca-saja untuk app lain (dipisah koma agar mudah rotasi). Min. 40 karakter per token.
+        'read_tokens' => array_values(array_filter(array_map(
+            'trim',
+            explode(',', (string) env('SOKROSOK_READ_TOKENS', ''))
+        ))),
+    ],
+
 ];
