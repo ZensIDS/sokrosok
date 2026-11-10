@@ -156,6 +156,7 @@ void setup() {
   Serial.begin(115200);
   delay(300);
   Serial.printf("\nSOKROSOK v2 | %s\n", BIN_CODE);
+  Serial.println("Firmware: v2.1 (dengan reset WiFi dari aplikasi)");
   pinMode(TRIG_PIN, OUTPUT);
   pinMode(ECHO_PIN, INPUT);
 
@@ -169,6 +170,7 @@ void setup() {
 
   Serial.println("Ambil config...");
   fetchConfig();
+  Serial.printf("Reset WiFi diminta server: %s\n", wifiResetRequested ? "YA" : "tidak");
 
   // Perintah "Reset WiFi" dari aplikasi: buka portal agar WiFi bisa diganti lewat HP.
   if (wifiResetRequested) {
